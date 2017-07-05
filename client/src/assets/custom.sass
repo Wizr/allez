@@ -1,0 +1,21 @@
+// 1. Import the initial variables
+@import "~bulma/sass/utilities/initial-variables"
+
+$turquoise: #20a0ff
+
+// 4. Import the rest of Bulma
+@import "~bulma/bulma.sass"
+
+.justify-center
+    justify-content: center
+.control.has-icon .icon
+    cursor: pointer
+.control.has-icon .is-clickable-icon
+    pointer-events: auto
+    &:hover
+        color: $grey-light
+        &+input
+            border-color: $grey-light
+.input
+    box-shadow: none
+    transition: border-color .2s cubic-bezier(.645,.045,.355,1)
