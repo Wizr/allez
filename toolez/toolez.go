@@ -46,8 +46,8 @@ func (tz *tz) SiteName() string {
 	return tz.siteName
 }
 
-func (tz *tz) DNSName() []string {
-	return tz.config.DNSName
+func (tz *tz) HostName() []string {
+	return tz.config.HostName
 }
 
 func New() core.EZSite {

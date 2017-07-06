@@ -17,10 +17,13 @@ func NewServer(rootPath string) *EZServer {
 	}
 	configPath := filepath.Join(rootPath, "config.yaml")
 	c := &Config{RootPath: rootPath}
-	return &EZServer{
-		siteServers: make(map[string]*EZSiteServer),
-		config:      c.ParseFile(configPath),
+	s := &EZServer{
+		config: c.ParseFile(configPath),
 	}
+	if s.config.Mode == "PROD" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	return s
 }
 
 /***************************************************
@@ -31,7 +34,7 @@ type EZSite interface {
 	Init(config *Config)
 	Register(*gin.Engine)
 	SiteName() string
-	DNSName() []string
+	HostName() []string
 }
 
 type EZSiteServer struct {
@@ -52,8 +55,8 @@ func (ss *EZSiteServer) Use(middleware ...gin.HandlerFunc) *EZSiteServer {
 	return ss
 }
 
-func (ss *EZSiteServer) DNSName() []string {
-	return ss.site.DNSName()
+func (ss *EZSiteServer) HostName() []string {
+	return ss.site.HostName()
 }
 
 /*********************************************************
@@ -61,9 +64,10 @@ EZServer a wrapper around gin providing extra features
 *********************************************************/
 
 type EZServer struct {
-	siteServers map[string]*EZSiteServer
-	middleware  []gin.HandlerFunc
-	config      *Config
+	siteServers     []*EZSiteServer
+	middleware      []gin.HandlerFunc
+	config          *Config
+	host2SiteServer map[string]*EZSiteServer
 
 	// certificate
 	am      *autocert.Manager
@@ -89,17 +93,17 @@ func (s *EZServer) SetCert(crtFile string, keyFile string) *EZServer {
 
 func (s *EZServer) RegisterSite(sites ...EZSite) *EZServer {
 	for _, site := range sites {
-		s.siteServers[site.SiteName()] = &EZSiteServer{site: site, server: gin.New()}
+		s.siteServers = append(s.siteServers, &EZSiteServer{site: site, server: gin.New()})
 	}
 	return s
 }
 
 func (s *EZServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if s.config.Mode == "DEV" {
-		s.siteServers["toolez"].server.ServeHTTP(w, r)
+		s.siteServers[0].server.ServeHTTP(w, r)
 		return
 	}
-	if siteServer := s.siteServers[r.Host]; siteServer != nil {
+	if siteServer, ok := s.host2SiteServer[r.Host]; ok {
 		siteServer.server.ServeHTTP(w, r)
 	} else {
 		// Handle host names for which no handler is registered
@@ -113,18 +117,25 @@ func (s *EZServer) ListenAndServe() {
 		ss.Register()
 		ss.Use(s.middleware...)
 	}
-	server := endless.NewServer(s.selectAddr(), s)
 	if s.config.Mode == "PROD" {
+		server := &http.Server{Addr: s.selectAddr()}
 		if s.am != nil {
-			hosts := []string{}
+			hostNames := []string{}
+			host2SiteServer := make(map[string]*EZSiteServer)
 			for _, ss := range s.siteServers {
-				hosts = append(hosts, ss.DNSName()...)
+				for _, host := range ss.HostName() {
+					host2SiteServer[host] = ss
+				}
+				hostNames = append(hostNames, ss.HostName()...)
 			}
-			s.am.HostPolicy = autocert.HostWhitelist(hosts...)
+			s.host2SiteServer = host2SiteServer
+			s.am.HostPolicy = autocert.HostWhitelist(hostNames...)
 			server.TLSConfig = &tls.Config{GetCertificate: s.am.GetCertificate}
+			server.Handler = s
 		}
-		server.ListenAndServe()
+		server.ListenAndServeTLS("", "")
 	} else {
+		server := endless.NewServer(s.selectAddr(), s)
 		server.ListenAndServeTLS(*s.crtFile, *s.keyFile)
 	}
 }
