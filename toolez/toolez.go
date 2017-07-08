@@ -15,6 +15,11 @@ type tz struct {
 	config     *Config
 }
 
+func (tz *tz) File(paths ...string) string {
+	paths = append([]string{tz.rootConfig.RootPath}, paths...)
+	return filepath.Join(paths...)
+}
+
 func (tz *tz) Init(config *core.Config) {
 	tz.rootConfig = config
 	c := &Config{}
@@ -24,8 +29,8 @@ func (tz *tz) Init(config *core.Config) {
 }
 
 func (tz *tz) Register(r *gin.Engine) {
-	r.StaticFile("/", filepath.Join(tz.rootConfig.RootPath, "static/index.html"))
-	r.Static("/static", filepath.Join(tz.rootConfig.RootPath, "static/static"))
+	r.StaticFile("/", tz.File("static/index.html"))
+	r.Static("/static", tz.File("static/static"))
 	api := r.Group("/api")
 	key1 := api.Group("/keygen")
 	{
@@ -38,7 +43,7 @@ func (tz *tz) Register(r *gin.Engine) {
 		key2.GET("/prolongTicket.action", func(*gin.Context) {})
 	}
 	r.NoRoute(func(c *gin.Context) {
-		c.File(filepath.Join(tz.rootConfig.RootPath, "static/index.html"))
+		c.File(tz.File("static/index.html"))
 	})
 }
 
