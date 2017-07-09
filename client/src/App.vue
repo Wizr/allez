@@ -28,7 +28,7 @@
         data() {
             return {
                 activeName: '',
-                tabs: ['Editplus', 'Charles'],
+                tabs: ['Editplus', 'Charles', 'AppStore'],
             }
         },
         methods: {

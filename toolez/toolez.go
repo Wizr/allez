@@ -35,6 +35,7 @@ func (tz *tz) Register(r *gin.Engine) {
 	key1 := api.Group("/keygen")
 	{
 		key1.POST("charles", keygen.GetCharlesKey)
+		key1.GET("appstore", keygen.GetAccounts)
 	}
 	key2 := r.Group("/rpc")
 	{

@@ -4730,6 +4730,10 @@ vue-analytics@^4.1.0:
   dependencies:
     load-script "^1.0.0"
 
+vue-async-computed@^3.2.1:
+  version "3.2.1"
+  resolved "http://registry.npm.taobao.org/vue-async-computed/download/vue-async-computed-3.2.1.tgz#930dc4f906dfc86d8ef8b3ad18b9af25b3097d76"
+
 vue-hot-reload-api@^2.1.0:
   version "2.1.0"
   resolved "http://registry.npm.taobao.org/vue-hot-reload-api/download/vue-hot-reload-api-2.1.0.tgz#9ca58a6e0df9078554ce1708688b6578754d86de"

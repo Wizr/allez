@@ -4,6 +4,9 @@ import Vue from 'vue'
 import VueAnalytics from 'vue-analytics'
 import './assets/custom.sass'
 
+import AsyncComputed from 'vue-async-computed'
+Vue.use(AsyncComputed)
+
 import * as Rx from 'rxjs'
 import VueRx from 'vue-rx'
 
