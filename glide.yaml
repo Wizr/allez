@@ -7,6 +7,4 @@ import:
   subpackages:
   - acme/autocert
 - package: github.com/mitchellh/mapstructure
-- package: github.com/gin-gonic/autotls
-  version: ^0.0.1
 - package: gopkg.in/yaml.v2
