@@ -1,6 +1,5 @@
 package: git.oschina.net/nt6/allez
 import:
-- package: github.com/fvbock/endless
 - package: github.com/gin-gonic/gin
   version: ^1.1.4
 - package: golang.org/x/crypto
