@@ -9,6 +9,7 @@ import { NavController, AlertController, LoadingController } from 'ionic-angular
   templateUrl: 'charles.html'
 })
 export class CharlesPage extends BasePage {
+  private pageName = "Charles";
   charlesModel = new CharlesModel();
 
   constructor(
@@ -27,7 +28,8 @@ export class CharlesPage extends BasePage {
           let model = (<any>response).json() as CharlesModel;
           parent.charlesModel.key = model.key;
         })
-        .then(() => { parent.dismissLoader() });
+        .then(() => { parent.dismissLoader() })
+        .catch(error => parent.handleError(error, parent.pageName));
     })
   }
 }

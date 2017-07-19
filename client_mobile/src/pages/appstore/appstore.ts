@@ -6,7 +6,6 @@ import { NavController } from 'ionic-angular';
   templateUrl: 'appstore.html'
 })
 export class AppStorePage {
-
   constructor(public navCtrl: NavController) {
 
   }
