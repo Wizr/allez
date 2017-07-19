@@ -1,0 +1,11 @@
+{
+  "name": "Toolez",
+  "app_id": "",
+  "type": "ionic-angular",
+  "proxies": [
+    {
+      "path": "/api",
+      "proxyUrl": "https://toolez.cc/api"
+    }
+  ]
+}

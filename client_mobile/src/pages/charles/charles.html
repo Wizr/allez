@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      注册码
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-item>
+      <ion-input type="text" [(ngModel)]="charlesModel.name" placeholder="请输入用户名" clearInput></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input type="text" [(ngModel)]="charlesModel.key" placeholder="注册码在这里" readonly></ion-input>
+    </ion-item>
+    <div padding>
+      <button ion-button color="primary" (click)="getKey()" block>起飞</button>
+    </div>
+  </ion-list>
+</ion-content>
