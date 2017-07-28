@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"git.oschina.net/nt6/allez/core"
-	"git.oschina.net/nt6/allez/toolez"
+	"github.com/vettu/allez/core"
+	"github.com/vettu/allez/toolez"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/acme/autocert"

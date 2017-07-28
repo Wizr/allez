@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"time"
 
-	"git.oschina.net/nt6/allez/libs"
 	"github.com/gin-gonic/gin"
+	"github.com/vettu/allez/libs"
 )
 
 type AccountRequestInfo struct {
@@ -29,13 +29,13 @@ type AccountInfo struct {
 }
 
 var yeziAccounts = map[string]*AccountRequestInfo{
-	"yezi": &AccountRequestInfo{
+	"yezi": {
 		ApplicationID: "0jPhBkJiLAPJNbaYFBAJavJR-gzGzoHsz",
 		ClientID:      "T2EcwHL2EjWR46PNNGytKEI8",
 		AES128Key:     "i know nothing about yezi!KALSDFIOQPWREJ91203JVZLVKJ0-1234",
 		URL:           "https://api.leancloud.cn/1.1/classes/Account/570b9b505bbb50004c1c6aee",
 	},
-	"yezi3": &AccountRequestInfo{
+	"yezi3": {
 		ApplicationID: "mywR1aPpOqPIOnrtJSSPWVzk-gzGzoHsz",
 		ClientID:      "pxiwVFBgLhjC1pHMFLSB8sqr",
 		AES128Key:     "i know nothing about yezi!KALSDFIOQPWREJ91203JVZLVKJ0-1234",

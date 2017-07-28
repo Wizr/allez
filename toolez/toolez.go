@@ -3,10 +3,10 @@ package toolez
 import (
 	"path/filepath"
 
-	"git.oschina.net/nt6/allez/core"
-	"git.oschina.net/nt6/allez/toolez/keygen"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
+	"github.com/vettu/allez/core"
+	"github.com/vettu/allez/toolez/keygen"
 )
 
 type tz struct {
