@@ -157,6 +157,12 @@ func (s *EZServer) ListenAndServe() {
 		log.Println("Server exited")
 	} else {
 		server := endless.NewServer(s.selectAddr(), s)
+		if _, err := os.Stat(*s.crtFile); os.IsNotExist(err) {
+			panic(err)
+		}
+		if _, err := os.Stat(*s.keyFile); os.IsNotExist(err) {
+			panic(err)
+		}
 		server.ListenAndServeTLS(*s.crtFile, *s.keyFile)
 	}
 }
