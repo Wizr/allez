@@ -1,8 +1,8 @@
 mode: dev
 dev:
-  addr: :8080
-prod:
   addr: :8443
+prod:
+  addr: :443
 site:
   toolez:
     hostname:
