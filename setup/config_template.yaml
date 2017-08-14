@@ -1,0 +1,10 @@
+mode: dev
+dev:
+  addr: :8080
+prod:
+  addr: :8443
+site:
+  toolez:
+    hostname:
+      - toolez.cc
+      - www.toolez.cc
