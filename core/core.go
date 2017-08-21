@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/fvbock/endless"
 	"github.com/gin-gonic/gin"
+	"github.com/unrolled/secure"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -75,9 +75,9 @@ type EZServer struct {
 	host2SiteServer map[string]*EZSiteServer
 
 	// certificate
-	am      *autocert.Manager
-	crtFile *string
-	keyFile *string
+	certManager *autocert.Manager
+	crtFile     *string
+	keyFile     *string
 }
 
 func (s *EZServer) Use(middleware ...gin.HandlerFunc) *EZServer {
@@ -86,7 +86,7 @@ func (s *EZServer) Use(middleware ...gin.HandlerFunc) *EZServer {
 }
 
 func (s *EZServer) SetAutoCert(manager *autocert.Manager) *EZServer {
-	s.am = manager
+	s.certManager = manager
 	return s
 }
 
@@ -117,63 +117,106 @@ func (s *EZServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *EZServer) ListenAndServe() {
+	secureMiddleware := secure.New(secure.Options{
+		FrameDeny:         true,
+		SSLRedirect:       true,
+		SSLHost:           "lst.nt:8443",
+		HostsProxyHeaders: []string{"X-Forwarded-Host"},
+	})
+	secureFunc := func() gin.HandlerFunc {
+		return func(c *gin.Context) {
+			err := secureMiddleware.Process(c.Writer, c.Request)
+
+			// If there was an error, do not continue.
+			if err != nil {
+				c.Abort()
+				return
+			}
+
+			// Avoid header rewrite if response is a redirection.
+			if status := c.Writer.Status(); status > 300 && status < 399 {
+				c.Abort()
+			}
+		}
+	}()
 	for _, ss := range s.siteServers {
 		ss.Init(s.config)
-		ss.Register()
 		ss.Use(s.middleware...)
+		ss.Use(secureFunc)
+		ss.Register()
 	}
+	serverSSL := &http.Server{Addr: s.selectAddr(true)}
+	serverSSL.Handler = s
 	if s.config.Mode == "PROD" {
-		server := &http.Server{Addr: s.selectAddr()}
-		if s.am != nil {
-			hostNames := []string{}
-			host2SiteServer := make(map[string]*EZSiteServer)
-			for _, ss := range s.siteServers {
-				for _, host := range ss.HostName() {
-					host2SiteServer[host] = ss
-				}
-				hostNames = append(hostNames, ss.HostName()...)
-			}
-			s.host2SiteServer = host2SiteServer
-			s.am.HostPolicy = autocert.HostWhitelist(hostNames...)
-			server.TLSConfig = &tls.Config{GetCertificate: s.am.GetCertificate}
-			server.Handler = s
+		if s.certManager == nil {
+			panic("Please setup cert manager.")
 		}
+		// setup cert manager
+		hostNames := []string{}
+		host2SiteServer := make(map[string]*EZSiteServer)
+		for _, ss := range s.siteServers {
+			for _, host := range ss.HostName() {
+				host2SiteServer[host] = ss
+			}
+			hostNames = append(hostNames, ss.HostName()...)
+		}
+		s.host2SiteServer = host2SiteServer
+		s.certManager.HostPolicy = autocert.HostWhitelist(hostNames...)
+		serverSSL.TLSConfig = &tls.Config{GetCertificate: s.certManager.GetCertificate}
 		go func() {
-			if err := server.ListenAndServeTLS("", ""); err != nil {
+			if err := serverSSL.ListenAndServeTLS("", ""); err != nil {
 				log.Printf("listen: %s\n", err)
 			}
 		}()
-		// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.
-		quit := make(chan os.Signal)
-		signal.Notify(quit, os.Interrupt)
-		<-quit
-		log.Println("Shutdown Server ...")
-
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		if err := server.Shutdown(ctx); err != nil {
-			log.Fatal("Server Shutdown:", err)
-		}
-		log.Println("Server exited")
 	} else {
-		server := endless.NewServer(s.selectAddr(), s)
 		if _, err := os.Stat(*s.crtFile); os.IsNotExist(err) {
 			panic(err)
 		}
 		if _, err := os.Stat(*s.keyFile); os.IsNotExist(err) {
 			panic(err)
 		}
-		server.ListenAndServeTLS(*s.crtFile, *s.keyFile)
+		go func() {
+			if err := serverSSL.ListenAndServeTLS(*s.crtFile, *s.keyFile); err != nil {
+				log.Printf("listen: %s\n", err)
+			}
+		}()
 	}
+	go func() {
+		server := &http.Server{Addr: s.selectAddr(false)}
+		server.Handler = s
+		if err := server.ListenAndServe(); err != nil {
+			log.Printf("listen: %s\n", err)
+		}
+	}()
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := serverSSL.Shutdown(ctx); err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
+	log.Println("Server exited")
 }
 
 ///////////////////
 // helper function
-func (s *EZServer) selectAddr() string {
-	if s.config.Mode == "PROD" {
-		return s.config.Prod.Addr
+func (s *EZServer) selectAddr(isSSL bool) string {
+	if isSSL == false {
+		if s.config.Mode == "PROD" {
+			return s.config.Prod.Addr
+		} else {
+			return s.config.Dev.Addr
+		}
 	} else {
-		return s.config.Dev.Addr
+		if s.config.Mode == "PROD" {
+			return s.config.Prod.AddrSSL
+		} else {
+			return s.config.Dev.AddrSSL
+		}
 	}
 }
 

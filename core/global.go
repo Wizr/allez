@@ -9,7 +9,8 @@ import (
 )
 
 type SubConfig struct {
-	Addr string
+	Addr    string
+	AddrSSL string
 }
 
 type Config struct {

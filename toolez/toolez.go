@@ -29,6 +29,7 @@ func (tz *tz) Init(config *core.Config) {
 }
 
 func (tz *tz) Register(r *gin.Engine) {
+	r.StaticFile("/favicon", tz.File("static/static/favicon.ico"))
 	r.StaticFile("/", tz.File("static/index.html"))
 	r.Static("/static", tz.File("static/static"))
 	api := r.Group("/api")
