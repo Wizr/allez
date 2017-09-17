@@ -39,7 +39,7 @@
                     debounceTime(200).
                     distinctUntilChanged().
                     pluck('newValue').
-                    switchMap(name => name ? fetchCharlesKey(name) : Rx.Observable.of({key: ''})).
+                    switchMap(name => name ? fetchCharlesKey(name.trim()) : Rx.Observable.of({key: ''})).
                     map(data => data.key).
                     startWith(''),
             }

@@ -5,23 +5,26 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type request struct {
-	name string `binding: required`
+	Name string `json:"name" binding:"required"`
 }
 
-// GetCharlesKey process http Get request
+// GetCharlesKey process http POST request
 func GetCharlesKey(c *gin.Context) {
 	var req request
-	if c.Bind(&req) == nil {
-		key := CharlesKeygen(req.name)
+	if c.BindJSON(&req) == nil {
+		name := strings.TrimSpace(req.Name)
+		if name == "" {
+			c.AbortWithStatus(http.StatusBadRequest)
+		}
+		key := CharlesKeygen(name)
 		c.JSON(http.StatusOK, gin.H{"key": key})
-	} else {
-		c.JSON(http.StatusNotFound, gin.H{"error": "404 Not found"})
 	}
 }
 
