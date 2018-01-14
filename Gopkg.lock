@@ -3,12 +3,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/fvbock/endless"
-  packages = ["."]
-  revision = "447134032cb6a86814f570257390a379982dfc61"
-
-[[projects]]
-  branch = "master"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
   revision = "22d885f9ecc78bf4ee5d72b937e4bbcdc58e8cae"
@@ -45,6 +39,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/unrolled/secure"
+  packages = ["."]
+  revision = "d6ff8660e1a61e887970a917ee2b9be0cfad6d40"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = ["acme","acme/autocert"]
   revision = "13931e22f9e72ea58bb73048bc752b48c6d4d4ac"
@@ -70,6 +70,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f158068eb89ebe780175322768b2f6a7954c00104b2906129d8c38ab8f8d8868"
+  inputs-digest = "bc80d126590a1605359ac34cd4adc4e661ae0eec21ca638b082af273e7782629"
   solver-name = "gps-cdcl"
   solver-version = 1
