@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "feature/dynamic-host"
+  name = "github.com/Wizr/secure"
+  packages = ["."]
+  revision = "8fbbddf445d46ee41d59fd4095a4e6891ef1fb07"
+
+[[projects]]
   branch = "master"
   name = "github.com/gin-contrib/sse"
   packages = ["."]
@@ -9,7 +15,11 @@
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
-  packages = [".","binding","render"]
+  packages = [
+    ".",
+    "binding",
+    "render"
+  ]
   revision = "d459835d2b077e44f7c9b453505ee29881d5d12d"
   version = "v1.2"
 
@@ -39,14 +49,11 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/unrolled/secure"
-  packages = ["."]
-  revision = "d6ff8660e1a61e887970a917ee2b9be0cfad6d40"
-
-[[projects]]
-  branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["acme","acme/autocert"]
+  packages = [
+    "acme",
+    "acme/autocert"
+  ]
   revision = "13931e22f9e72ea58bb73048bc752b48c6d4d4ac"
 
 [[projects]]
@@ -70,6 +77,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bc80d126590a1605359ac34cd4adc4e661ae0eec21ca638b082af273e7782629"
+  inputs-digest = "7356b0476c1ce9ddc3748e88e74692013cdec1a8b8f5dc39b0e3fc4d8f741309"
   solver-name = "gps-cdcl"
   solver-version = 1

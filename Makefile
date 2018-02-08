@@ -1,18 +1,18 @@
 GO = go
-GLIDE = glide
+DEP = dep
 
 .PHONY: all
 all: darwin linux
 
-glide.lock: glide.yaml
+Gopkg.lock: Gopkg.toml
 	$(GLIDE) update
 
 .PHONY: darwin
-darwin: main.go core libs toolez glide.lock static
+darwin: main.go core libs toolez Gopkg.lock static
 	GOOS=darwin GOARCH=amd64 $(GO) build -o bin/allez.darwin main.go
 
 .PHONY: linux
-linux: main.go core libs toolez glide.lock static
+linux: main.go core libs toolez Gopkg.lock static
 	GOOS=linux GOARCH=amd64 $(GO) build -o bin/allez.linux main.go
 
 # set npm/yarn to use taobao mirror

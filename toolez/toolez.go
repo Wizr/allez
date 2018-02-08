@@ -9,29 +9,50 @@ import (
 	"github.com/vettu/allez/toolez/keygen"
 )
 
-type tz struct {
+func New() core.ISiteInfo {
+	s := &toolez{
+		siteName: "toolez",
+	}
+	return s
+}
+
+type toolez struct {
 	siteName   string
 	rootConfig *core.Config
 	config     *Config
+	router     *gin.Engine
+
+	middlewares []gin.HandlerFunc
 }
 
-func (tz *tz) File(paths ...string) string {
+func (tz *toolez) SiteFile(paths ...string) string {
 	paths = append([]string{tz.rootConfig.RootPath}, paths...)
 	return filepath.Join(paths...)
 }
 
-func (tz *tz) Init(config *core.Config) {
+func (tz *toolez) Init(config *core.Config) {
 	tz.rootConfig = config
 	c := &Config{}
 	mapstructure.Decode(config.Site[tz.siteName], c)
-	//config.Site[tz.siteName] = c
+	config.Site[tz.siteName] = c
 	tz.config = c
+
+	tz.router = gin.New()
 }
 
-func (tz *tz) Register(r *gin.Engine) {
-	r.StaticFile("/favicon", tz.File("static/static/favicon.ico"))
-	r.StaticFile("/", tz.File("static/index.html"))
-	r.Static("/static", tz.File("static/static"))
+func (tz *toolez) DelayUse(middleware ...gin.HandlerFunc) core.ISiteInfo {
+	tz.middlewares = append(tz.middlewares, middleware...)
+	return tz
+}
+func (tz *toolez) Use() {
+	tz.router.Use(tz.middlewares...)
+}
+
+func (tz *toolez) RegRouter() {
+	r := tz.router
+	r.StaticFile("/favicon.ico", tz.SiteFile("static/static/favicon.ico"))
+	r.StaticFile("/", tz.SiteFile("static/index.html"))
+	r.Static("/static", tz.SiteFile("static/static"))
 	api := r.Group("/api")
 	key1 := api.Group("/keygen")
 	{
@@ -45,21 +66,18 @@ func (tz *tz) Register(r *gin.Engine) {
 		key2.GET("/prolongTicket.action", func(*gin.Context) {})
 	}
 	r.NoRoute(func(c *gin.Context) {
-		c.File(tz.File("static/index.html"))
+		c.File(tz.SiteFile("static/index.html"))
 	})
 }
 
-func (tz *tz) SiteName() string {
+func (tz *toolez) SiteName() string {
 	return tz.siteName
 }
 
-func (tz *tz) HostName() []string {
-	return tz.config.HostName
+func (tz *toolez) HostNames() []string {
+	return tz.config.HostNames
 }
 
-func New() core.EZSite {
-	s := &tz{
-		siteName: "toolez",
-	}
-	return s
+func (tz *toolez) GinEngine() *gin.Engine {
+	return tz.router
 }

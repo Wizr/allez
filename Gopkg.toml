@@ -22,20 +22,21 @@
 
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/fvbock/endless"
-
-[[constraint]]
   name = "github.com/gin-gonic/gin"
+  version = "v1.2"
 
 [[constraint]]
   name = "github.com/mitchellh/mapstructure"
+  branch = "master"
 
 [[constraint]]
   name = "golang.org/x/crypto"
+  branch = "master"
 
 [[constraint]]
   name = "gopkg.in/yaml.v2"
+  branch = "v2"
 
 [[constraint]]
-  name = "github.com/unrolled/secure"
+  name = "github.com/Wizr/secure"
+  branch = "feature/dynamic-host"

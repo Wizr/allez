@@ -28,6 +28,6 @@ func main() {
 			Prompt: autocert.AcceptTOS,
 			Cache:  autocert.DirCache("./certcache"),
 		}).
-		SetCert("./certcache/server.crt", "./certcache/server.key").
+		SetStaticCert("./certcache/server.crt", "./certcache/server.key").
 		ListenAndServe()
 }

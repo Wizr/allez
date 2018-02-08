@@ -1,5 +1,5 @@
 package toolez
 
 type Config struct {
-	HostName []string
+	HostNames []string
 }
