@@ -88,9 +88,15 @@ func (s *Server) ListenAndServe() {
 		si.Init(s.config)
 		for _, host := range si.HostNames() {
 			for _, port := range []string{s.getSubConfig().Port, s.getSubConfig().PortSSL} {
-				h := host + ":" + port
-				allowedHost = append(allowedHost, h)
-				s.host2SiteInfo[h] = si
+				p := ""
+				if port != "80" && port != "443" {
+					p = ":" + port
+				}
+				h := host + p
+				if _, ok := s.host2SiteInfo[h]; !ok {
+					s.host2SiteInfo[h] = si
+					allowedHost = append(allowedHost, h)
+				}
 			}
 		}
 	}
