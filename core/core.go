@@ -94,6 +94,7 @@ func (s *Server) ListenAndServe() {
 			}
 		}
 	}
+	s.validateConfig()
 	secureFunc := s.getSecureFunc(allowedHost)
 	for _, si := range s.siteInfos {
 		si.DelayUse(s.middlewares...)
@@ -161,10 +162,7 @@ func (s *Server) getListenAddr(isSSL bool) (addr string) {
 }
 
 func (s *Server) getSubConfig() SubConfig {
-	if s.config.Mode == "PROD" {
-		return s.config.Prod
-	}
-	return s.config.Dev
+	return s.config.getSubConfig()
 }
 
 func (s *Server) getSecureFunc(allowedHost []string) gin.HandlerFunc {
@@ -210,4 +208,13 @@ func (s *Server) getSecureFunc(allowedHost []string) gin.HandlerFunc {
 		}
 	}()
 	return secureFunc
+}
+
+func (s *Server) validateConfig() {
+	s.config.Validate()
+	for _, rootConfig := range s.config.Site {
+		if siteConfig, ok := rootConfig.(iValidate); ok {
+			siteConfig.Validate()
+		}
+	}
 }
