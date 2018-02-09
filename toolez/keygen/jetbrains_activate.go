@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -37,6 +38,27 @@ func init() {
 func ActivateIdea(c *gin.Context) {
 	salt := c.Query("salt")
 	userName := c.Query("userName")
+	log.Printf(`UserName: %v
+HostName: %v
+MachineId: %v
+ProductCode: %v
+ProductFamilyId: %v
+BuildNumber: %v
+ClientVersion: %v
+VersionNumber: %v
+secure: %v
+salt: %v
+`,
+		userName,
+		c.Query("hostName"),
+		c.Query("machineId"),
+		c.Query("productCode"),
+		c.Query("productFamilyId"),
+		c.Query("buildNumber"),
+		c.Query("clientVersion"),
+		c.Query("versionNumber"),
+		c.Query("secure"),
+		c.Query("salt"))
 
 	ticket := fmt.Sprintf(`<ObtainTicketResponse>
 	<message></message>
