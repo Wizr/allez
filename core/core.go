@@ -172,7 +172,7 @@ func (s *Server) getSubConfig() SubConfig {
 }
 
 func (s *Server) getSecureFunc(allowedHost []string) gin.HandlerFunc {
-	sslHostFunc := (func() secure.SSLHostFunc {
+	sslHostFunc := func() secure.SSLHostFunc {
 		cache := make(map[string]string)
 		return func(host string) (newHost string) {
 			// ignore default port
@@ -190,7 +190,7 @@ func (s *Server) getSecureFunc(allowedHost []string) gin.HandlerFunc {
 			}
 			return
 		}
-	})()
+	}()
 	secureMiddleware := secure.New(secure.Options{
 		FrameDeny:   true,
 		SSLRedirect: true,
