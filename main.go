@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/vettu/allez/core"
+	"github.com/vettu/allez/libs/middleware"
 	"github.com/vettu/allez/toolez"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +23,7 @@ func init() {
 
 func main() {
 	core.NewServer(*rootPath).
-		Use(gin.Logger(), gin.Recovery()).
+		Use(gin.Logger(), gin.Recovery(), middleware.Redis()).
 		RegisterSite(toolez.New()).
 		SetAutoCert(&autocert.Manager{
 			Prompt: autocert.AcceptTOS,

@@ -40,3 +40,7 @@
 [[constraint]]
   name = "github.com/Wizr/secure"
   branch = "feature/dynamic-host"
+
+[[constraint]]
+  name="github.com/go-redis/redis"
+  version="v6.8.3"

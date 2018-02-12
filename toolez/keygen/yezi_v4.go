@@ -13,16 +13,20 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"github.com/vettu/allez/libs"
 	"github.com/vettu/allez/libs/errorf"
+	"github.com/vettu/allez/libs/middleware"
 )
 
 const (
-	tokenUrl   = "https://api.yeziapp.com/client/tokens"
-	accountUrl = "https://api.yeziapp.com/client/accounts"
-	maxTry     = 2
+	tokenUrl       = "https://api.yeziapp.com/client/tokens"
+	accountUrl     = "https://api.yeziapp.com/client/accounts"
+	redisCookieKey = "yezi-cookie"
 )
 
 type accountInfo struct {
@@ -37,35 +41,10 @@ func init() {
 		serialNumber: "C02LSLIPFH00",
 		seller:       "yezi",
 	}
-	id.token, _ = id.fetchToken()
 }
 
 func GetAccounts(c *gin.Context) {
-	accounts := func() (accounts []*accountInfo) {
-		var err error
-		if id.token == nil {
-			if id.curTry == maxTry {
-				return
-			}
-			id.token, err = id.fetchToken()
-			id.curTry ++
-			if err != nil {
-				log.Printf("[yezi] fetchToken | %v", err)
-				return
-			}
-		}
-		id.data, err = id.fetchAccountData()
-		if err != nil {
-			log.Printf("[yezi] parseData | %v", err)
-			return
-		}
-		accounts, err = id.parseData()
-		if err != nil {
-			log.Printf("[yezi] parseData | %v", err)
-			return nil
-		}
-		return
-	}()
+	accounts := getAccountInfo(c)
 	if accounts == nil {
 		c.JSON(http.StatusOK, gin.H{"error": "No result found."})
 	} else {
@@ -73,48 +52,127 @@ func GetAccounts(c *gin.Context) {
 	}
 }
 
-type identity struct {
-	serialNumber string
-	seller       string
-
-	token  []*http.Cookie
-	data   string
-	curTry int
-}
-
-func (id *identity) fetchToken() (token []*http.Cookie, erf error) {
-	jsonStr := []byte (fmt.Sprintf(`{"serialNumber": "%v", "seller": "%v"}`, id.serialNumber, id.seller))
-	resp, err := http.Post(tokenUrl, "application/json", bytes.NewBuffer(jsonStr))
-	if err != nil {
-		erf = errorf.Newf("Post error: %v\n", err)
+func getAccountInfo(c *gin.Context) (accounts []*accountInfo) {
+	var redisConn *redis.Client
+	if c, exist := c.Get(middleware.CtxRedisConn); !exist {
+		log.Println("[yezi] no redis middleware or init failed")
+	} else if c, ok := c.(*redis.Client); !ok {
+		log.Println("[yezi] redis client type error")
+	} else {
+		redisConn = c
+	}
+	if redisConn == nil {
+		c.JSON(http.StatusOK, gin.H{"error": "No result found."})
 		return
 	}
-	token = resp.Cookies()
+	// get cookie
+	var cookie []*http.Cookie
+	rawCookie, err := redisConn.Get(redisCookieKey).Result()
+	if err == redis.Nil {
+		// fetch cookie
+		cookie, err = id.fetchToken()
+		if err != nil {
+			log.Printf("[yezi] fetchToken | %v\n", err)
+			return
+		}
+		// cache cookie in redis
+		var rawCookies []string
+		var expire *time.Time
+		for _, c := range cookie {
+			rawCookies = append(rawCookies, fmt.Sprintf("%v,%v", c.Name, c.Value))
+			if expire == nil {
+				expire = &c.Expires
+			} else if !c.Expires.IsZero() && c.Expires.Before(*expire) {
+				expire = &c.Expires
+			}
+		}
+		var duration time.Duration
+		if expire != nil {
+			duration = expire.Sub(time.Now()) - time.Hour
+		}
+		rawCookie = strings.Join(rawCookies, ";")
+		err = redisConn.Set(redisCookieKey, rawCookie, duration).Err()
+		if err != nil {
+			log.Printf("[yezi] redis set error | %v\n", err)
+		}
+	} else if err != nil {
+		log.Printf("[yezi] redis get error | %v\n", err)
+		return
+	}
+	// get account data
+	cookies := strings.Split(rawCookie, ";")
+	for _, c := range cookies {
+		kv := strings.Split(c, ",")
+		if len(kv) != 2 {
+			continue
+		}
+		cookie = append(cookie, &http.Cookie{
+			Name:  kv[0],
+			Value: kv[1],
+		})
+	}
+	data, err := id.fetchAccountData(cookie)
+	if err != nil {
+		if err := redisConn.Del(redisCookieKey).Err(); err != nil {
+			log.Printf("[yezi] redis del error | %v\n", err)
+		}
+		log.Printf("[yezi] fetchAccountData | %v\n", err)
+		return
+	}
+	accounts, err = id.parseData(data)
+	if err != nil {
+		log.Printf("[yezi] parseData | %v\n", err)
+		return nil
+	}
 	return
 }
 
-func (id *identity) fetchAccountData() (data string, erf error) {
+type identity struct {
+	serialNumber string
+	seller       string
+}
+
+func (id *identity) fetchToken() (cookie []*http.Cookie, erf error) {
+	jsonStr := []byte (fmt.Sprintf(`{"serialNumber": "%v", "seller": "%v"}`, id.serialNumber, id.seller))
+	resp, err := http.Post(tokenUrl, "application/json", bytes.NewBuffer(jsonStr))
+	if err != nil {
+		erf = errorf.Newf("Post error: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+	cookie = resp.Cookies()
+	if len(cookie) == 0 {
+		erf = errorf.Newf("No cookie found: %v", err)
+		return
+	}
+	return
+}
+
+func (id *identity) fetchAccountData(cookie []*http.Cookie) (data string, erf error) {
 	// create request
 	req, _ := http.NewRequest("GET", accountUrl, nil)
-	for _, cookie := range id.token {
-		req.AddCookie(cookie)
+	req.Close = true
+	for _, c := range cookie {
+		req.AddCookie(c)
 	}
 
 	// do request
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		erf = errorf.Newf("do request failed: %v\n", err)
+		erf = errorf.Newf("do request failed: %v", err)
+		return
+	}
+	if resp.StatusCode != http.StatusOK {
+		erf = errorf.Newf("request not succeeds", resp.StatusCode)
 		return
 	}
 
 	// read response
-	defer func() {
-		resp.Body.Close()
-	}()
+	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		erf = errorf.Newf("read response body failed: %v\n", err)
+		erf = errorf.Newf("read response body failed: %v", err)
 		return
 	}
 
@@ -122,7 +180,7 @@ func (id *identity) fetchAccountData() (data string, erf error) {
 	t := &struct{ Data string }{}
 	err = json.Unmarshal(body, t)
 	if err != nil {
-		erf = errorf.Newf("json unmarshal failed: %v\n", err)
+		erf = errorf.Newf("json unmarshal failed: %v", err)
 		return
 	}
 	data = t.Data
@@ -130,11 +188,11 @@ func (id *identity) fetchAccountData() (data string, erf error) {
 }
 
 // decrypt crypto-js encrypted data
-func (id *identity) parseData() (accounts []*accountInfo, erf error) {
+func (id *identity) parseData(data string) (accounts []*accountInfo, erf error) {
 	// prepare encrypted data
-	rawData, err := base64.StdEncoding.DecodeString(id.data)
+	rawData, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
-		erf = errorf.Newf("base64 decoding failed %v\n", err)
+		erf = errorf.Newf("base64 decoding failed %v", err)
 		return
 	}
 
@@ -158,7 +216,7 @@ func (id *identity) parseData() (accounts []*accountInfo, erf error) {
 	// parse the decrypted data, a json
 	err = json.Unmarshal(d, &accounts)
 	if err != nil {
-		erf = errorf.Newf("json unmarshal failed: %v\n", string(d))
+		erf = errorf.Newf("json unmarshal failed: %v", string(d))
 		return
 	}
 	return
