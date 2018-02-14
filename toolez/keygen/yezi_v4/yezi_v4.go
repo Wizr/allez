@@ -65,6 +65,8 @@ func GetAccounts(c *gin.Context) {
 		accounts, err = doGetPasses(redisConn)
 		if err != nil {
 			log.Printf("[yezi] doGetPasses | %v\n", err)
+			redisConn.Del(redisKeyCookie)
+			redisConn.Del(redisKeyPass)
 			return
 		}
 		redisKey.(*passRedisKey).accounts = accounts

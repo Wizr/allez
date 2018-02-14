@@ -59,7 +59,7 @@ func (id *Identity) fetchAccountData(cookie []*http.Cookie) (data string, erf er
 		return
 	}
 	if resp.StatusCode != http.StatusOK {
-		erf = errorf.Newf("request not succeeds", resp.StatusCode)
+		erf = errorf.Newf("request failed: %v", resp.StatusCode)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (id *Identity) parseData(data string) (accounts []*sAccountInfo, erf error)
 	// prepare encrypted data
 	rawData, err := base64.StdEncoding.DecodeString(data)
 	if err != nil {
-		erf = errorf.Newf("base64 decoding failed %v", err)
+		erf = errorf.Newf("base64 decoding failed: %v", err)
 		return
 	}
 

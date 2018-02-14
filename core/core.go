@@ -8,11 +8,11 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"time"
 	"strings"
+	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/Wizr/secure"
+	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/acme/autocert"
 )
 

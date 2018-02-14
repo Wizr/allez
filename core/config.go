@@ -2,10 +2,10 @@ package core
 
 import (
 	"io/ioutil"
-	"os"
-	"strings"
 	"log"
+	"os"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
