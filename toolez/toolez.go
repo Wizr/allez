@@ -7,6 +7,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"github.com/vettu/allez/core"
 	"github.com/vettu/allez/toolez/keygen"
+	"github.com/vettu/allez/toolez/keygen/yezi_v4"
 )
 
 func New() core.ISiteInfo {
@@ -57,7 +58,7 @@ func (tz *toolez) RegRouter() {
 	key1 := api.Group("/keygen")
 	{
 		key1.POST("charles", keygen.GetCharlesKey)
-		key1.GET("appstore", keygen.GetAccounts)
+		key1.GET("appstore", yezi_v4.GetAccounts)
 	}
 	key2 := r.Group("/rpc")
 	{
