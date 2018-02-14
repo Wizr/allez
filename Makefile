@@ -5,7 +5,7 @@ DEP = dep
 all: darwin linux
 
 Gopkg.lock: Gopkg.toml
-	$(GLIDE) update
+	$(DEP) ensure
 
 .PHONY: darwin
 darwin: main.go core libs toolez Gopkg.lock static
