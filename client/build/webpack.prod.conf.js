@@ -24,7 +24,9 @@ var webpackConfig = merge(baseWebpackConfig, {
         filename: utils.assetsPath('js/[name].[chunkhash].js'),
         chunkFilename: utils.assetsPath('js/[id].[chunkhash].js')
     },
+    // package name -> default export value
     externals: {
+        axios: 'axios',
         vue: 'Vue',
         rxjs: 'Rx',
         'vue-router': 'VueRouter',

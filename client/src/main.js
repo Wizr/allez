@@ -1,12 +1,9 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
+import './assets/custom.sass'
 import Vue from 'vue'
 import VueAnalytics from 'vue-analytics'
-import './assets/custom.sass'
-
 import AsyncComputed from 'vue-async-computed'
-Vue.use(AsyncComputed)
-
 import * as Rx from 'rxjs'
 import VueRx from 'vue-rx'
 
@@ -15,6 +12,7 @@ import router from './router'
 
 Vue.config.productionTip = true
 
+Vue.use(AsyncComputed)
 Vue.use(VueRx, Rx)
 Vue.use(VueAnalytics, {
     id: 'UA-86109905-1',

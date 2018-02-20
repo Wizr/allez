@@ -1,24 +1,43 @@
 <template>
     <div class="columns justify-center">
-        <div class="column is-narrow" v-if="value && value['result']">
-            <div class="box" v-for="(info, name) in value['result']">
-                <span>{{ name }}</span>
-                <span class="account-field">{{ info['AppleID'] }}</span>
-                <span class="account-field">{{ info['Password'] }}</span>
+        <div class="column is-narrow" v-if="accounts">
+            <div class="column is-narrow loading" v-if="accounts.error">唉呀，出错了☹️</div>
+            <div v-else>
+                <div class="box"  v-for="(account, index) in accounts" :key="index">
+                    <span>{{index}}</span>
+                    <span class="account-field">{{account['AppleID']}}</span>
+                    <span class="account-field">{{account['Password']}}</span>
+                </div>
             </div>
         </div>
-        <span class="column is-narrow loading" v-else="">正在召唤，请稍后再试...</span>
+        <span class="column is-narrow loading" v-else>正在获取，请稍等...</span>
     </div>
 </template>
 
 <script>
+    import axios from 'axios'
     export default {
         name: 'AppStore',
         asyncComputed: {
-            value() {
-                return fetch('/api/keygen/appstore', {
-                    method: 'GET',
-                }).then(response => response.json()).catch(() => 'Internal Error')
+            accounts() {
+                return axios.get('/api/keygen/appstore').then(response => {
+                    let err = undefined
+                    let data = response.data
+                    if (data) {
+                        if (data['result']) {
+                            return data['result']
+                        }
+                        err = data
+                    } else {
+                        err = {error: 'Server internal error!'}
+                    }
+                    console.log(err)
+                    return err
+                }).catch((e) => {
+                    let err = {error: e.message}
+                    console.log(err)
+                    return err
+                })
             },
         },
         created() {
