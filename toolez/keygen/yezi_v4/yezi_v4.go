@@ -61,19 +61,20 @@ func GetAccounts(c *gin.Context) {
 		},
 	}, func(redisKey iRedisKey) {
 		accounts = redisKey.(*passRedisKey).accounts
-	}, func(redisKey iRedisKey) {
+	}, func(redisKey iRedisKey) error {
 		accounts, err = doGetPasses(redisConn)
 		if err != nil {
 			log.Printf("[yezi] doGetPasses | %v\n", err)
 			redisConn.Del(redisKeyCookie)
 			redisConn.Del(redisKeyPass)
-			return
+			return err
 		}
 		redisKey.(*passRedisKey).accounts = accounts
+		return nil
 	})
 }
 
-func doGetRedisValue(redisKey iRedisKey, onSucc func(iRedisKey), onFail func(iRedisKey)) {
+func doGetRedisValue(redisKey iRedisKey, onSucc func(iRedisKey), onFail func(iRedisKey) error) {
 	var err error
 	if err = redisKey.Get(); err != nil {
 		log.Printf("[yezi] redis get %v: %v\n", redisKey.GetKey(), err)
@@ -81,9 +82,10 @@ func doGetRedisValue(redisKey iRedisKey, onSucc func(iRedisKey), onFail func(iRe
 		log.Printf("[yezi] redis deserialize %v: %v\n", redisKey.GetKey(), err)
 	}
 	if err != nil {
-		onFail(redisKey)
-		redisKey.Serialize()
-		redisKey.Set()
+		if onFail(redisKey) == nil {
+			redisKey.Serialize()
+			redisKey.Set()
+		}
 		return
 	}
 	onSucc(redisKey)
@@ -99,9 +101,13 @@ func doGetPasses(redisConn *redis.Client) (accounts []*sAccountInfo, err error) 
 		},
 	}, func(redisKey iRedisKey) {
 		cookies = redisKey.(*cookieRedisKey).cookies
-	}, func(redisKey iRedisKey) {
+	}, func(redisKey iRedisKey) error {
 		cookies, err = id.fetchToken()
+		if err != nil {
+			return err
+		}
 		redisKey.(*cookieRedisKey).cookies = cookies
+		return nil
 	})
 	if err != nil {
 		return
