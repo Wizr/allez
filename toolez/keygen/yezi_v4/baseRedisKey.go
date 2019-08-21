@@ -3,8 +3,8 @@ package yezi_v4
 import (
 	"time"
 
+	"github.com/Wizr/allez/libs/errorf"
 	"github.com/go-redis/redis"
-	"github.com/vettu/allez/libs/errorf"
 )
 
 type baseRedisKey struct {

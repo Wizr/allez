@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vettu/allez/core"
-	"github.com/vettu/allez/libs/middleware"
-	"github.com/vettu/allez/toolez"
+	"github.com/Wizr/allez/core"
+	"github.com/Wizr/allez/libs/middleware"
+	"github.com/Wizr/allez/toolez"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/acme/autocert"

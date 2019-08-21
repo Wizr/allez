@@ -13,8 +13,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/vettu/allez/libs"
-	"github.com/vettu/allez/libs/errorf"
+	"github.com/Wizr/allez/libs"
+	"github.com/Wizr/allez/libs/errorf"
 )
 
 const (

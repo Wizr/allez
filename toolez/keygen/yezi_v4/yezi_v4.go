@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Wizr/allez/libs/errorf"
+	"github.com/Wizr/allez/libs/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
-	"github.com/vettu/allez/libs/errorf"
-	"github.com/vettu/allez/libs/middleware"
 )
 
 const (

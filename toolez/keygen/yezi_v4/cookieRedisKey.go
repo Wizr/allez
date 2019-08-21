@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vettu/allez/libs/errorf"
+	"github.com/Wizr/allez/libs/errorf"
 )
 
 type cookieRedisKey struct {

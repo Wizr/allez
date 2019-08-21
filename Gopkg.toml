@@ -38,8 +38,8 @@
   branch = "v2"
 
 [[constraint]]
-  name = "github.com/Wizr/secure"
-  branch = "feature/dynamic-host"
+  name = "gopkg.in/unrolled/secure.v1"
+  branch = "v1"
 
 [[constraint]]
   name="github.com/go-redis/redis"

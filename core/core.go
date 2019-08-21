@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Wizr/secure"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/acme/autocert"
+	"gopkg.in/unrolled/secure.v1"
 )
 
 func NewServer(rootPath string) *Server {

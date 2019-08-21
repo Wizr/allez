@@ -3,11 +3,11 @@ package toolez
 import (
 	"path/filepath"
 
+	"github.com/Wizr/allez/core"
+	"github.com/Wizr/allez/toolez/keygen"
+	"github.com/Wizr/allez/toolez/keygen/yezi_v4"
 	"github.com/gin-gonic/gin"
 	"github.com/mitchellh/mapstructure"
-	"github.com/vettu/allez/core"
-	"github.com/vettu/allez/toolez/keygen"
-	"github.com/vettu/allez/toolez/keygen/yezi_v4"
 )
 
 func New() core.ISiteInfo {

@@ -3,7 +3,7 @@ package yezi_v4
 import (
 	"strings"
 
-	"github.com/vettu/allez/libs/errorf"
+	"github.com/Wizr/allez/libs/errorf"
 )
 
 type sAccountInfo struct {

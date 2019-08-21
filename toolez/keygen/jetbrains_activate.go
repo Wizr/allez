@@ -6,9 +6,9 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
+	"log"
 	"math/big"
 	"net/http"
-	"log"
 
 	"github.com/gin-gonic/gin"
 )
