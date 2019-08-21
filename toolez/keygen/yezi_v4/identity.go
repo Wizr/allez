@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -27,9 +28,11 @@ type Identity struct {
 	seller       string
 }
 
+var client = &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+
 func (id *Identity) fetchToken() (cookie []*http.Cookie, erf error) {
 	jsonStr := []byte (fmt.Sprintf(`{"serialNumber": "%v", "seller": "%v"}`, id.serialNumber, id.seller))
-	resp, err := http.Post(tokenUrl, "application/json", bytes.NewBuffer(jsonStr))
+	resp, err := client.Post(tokenUrl, "application/json", bytes.NewBuffer(jsonStr))
 	if err != nil {
 		erf = errorf.Newf("Post error: %v", err)
 		return
@@ -52,7 +55,6 @@ func (id *Identity) fetchAccountData(cookie []*http.Cookie) (data string, erf er
 	}
 
 	// do request
-	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		erf = errorf.Newf("do request failed: %v", err)

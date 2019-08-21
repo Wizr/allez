@@ -137,7 +137,7 @@ func (s *Server) ListenAndServe() {
 	}
 	go func() {
 		server := &http.Server{Addr: s.getListenAddr(false)}
-		server.Handler = s
+		server.Handler = s.certManager.HTTPHandler(s)
 		if err := server.ListenAndServe(); err != nil {
 			log.Printf("listen: %s\n", err)
 		}
